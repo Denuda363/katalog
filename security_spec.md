@@ -4,7 +4,7 @@
 1. Products can only be created, updated, or deleted by authenticated admins.
 2. Anyone can read product data.
 3. Timestamp fields (`createdAt`, `updatedAt`) must be set using server timestamps.
-4. Product prices and stocks must be positive numbers.
+4. Product prices must be positive numbers.
 5. `ownerId` logic is not applicable here as it is a public catalog, but write access is restricted to a set of admins.
 
 ## The "Dirty Dozen" Payloads (Attacks)

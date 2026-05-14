@@ -9,10 +9,12 @@ export interface Product {
   priceKhusus?: number; // Harga Khusus
   priceHKOTC?: number;  // Harga HK OTC
   imageUrl?: string;
-  stock: number;
   isPromo?: boolean;
   isBundling?: boolean;
   bundlingItems?: string;
+  benefits?: string;
+  ingredients?: string;
+  usageInstructions?: string;
   promoText?: string;
   createdAt: any;
   updatedAt: any;

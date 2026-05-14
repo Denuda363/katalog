@@ -9,6 +9,7 @@ export interface AppSettings {
   appName: string;
   logoUrl: string;
   contactNumber: string;
+  address?: string;
 }
 
 export const settingsService = {
@@ -20,7 +21,8 @@ export const settingsService = {
         adminPin: '12345',
         appName: 'MediCatalog+',
         logoUrl: '',
-        contactNumber: ''
+        contactNumber: '',
+        address: ''
       };
 
       if (snap.exists()) {
@@ -37,7 +39,9 @@ export const settingsService = {
       return {
         adminPin: '12345',
         appName: 'MediCatalog+',
-        logoUrl: ''
+        logoUrl: '',
+        contactNumber: '',
+        address: ''
       };
     }
   },

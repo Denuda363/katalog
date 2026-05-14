@@ -41,7 +41,6 @@ service cloud.firestore {
              p.category is string && p.category.size() > 0 && p.category.size() <= 50 &&
              p.description is string && p.description.size() <= 2000 &&
              p.priceMedis is number && p.priceMedis >= 0 &&
-             p.stock is number && p.stock >= 0 &&
              (p.imageUrl == null || (p.imageUrl is string && p.imageUrl.size() <= 1000000)) &&
              p.isPromo is bool &&
              (p.isBundling == null || p.isBundling is bool) &&

@@ -47,7 +47,7 @@ export const Promo = () => {
               transition={{ delay: 0.2 }}
               className="text-slate-400 text-lg md:text-xl max-w-lg mb-0"
             >
-              Hemat lebih banyak untuk produk kesehatan esensial keluarga Anda. Stok terbatas!
+              Hemat lebih banyak untuk produk kesehatan esensial keluarga Anda. Exclusive Offer!
             </motion.p>
           </div>
 

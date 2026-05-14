@@ -14,7 +14,6 @@
         "priceKhusus": { "type": "number", "description": "Harga Khusus" },
         "priceHKOTC": { "type": "number", "description": "Harga HK OTC" },
         "imageUrl": { "type": "string", "description": "URL to product image" },
-        "stock": { "type": "number", "description": "Remaining stock" },
         "isPromo": { "type": "boolean", "description": "Whether the product is currently on promotion" },
         "isBundling": { "type": "boolean", "description": "Whether the product is a bundle package" },
         "bundlingItems": { "type": "string", "description": "Details of items included in the bundle" },
@@ -22,7 +21,7 @@
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["name", "category", "priceMedis", "stock"]
+      "required": ["name", "category", "priceMedis"]
     },
     "category": {
       "title": "Category",

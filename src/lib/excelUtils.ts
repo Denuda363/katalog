@@ -13,11 +13,13 @@ export const excelUtils = {
         'Harga MB': 48000,
         'Harga Khusus': 40000,
         'Harga HK OTC': 42000,
-        Stok: 100,
         'Is Promo (Y/N)': 'Y',
         'Promo Text': 'Diskon 10%',
         'Is Bundling (Y/N)': 'N',
         'Isi Paket Bundling': '',
+        Khasiat: 'Untuk meredakan demam',
+        Kandungan: 'Paracetamol 500mg',
+        'Aturan Pakai': '3x sehari 1 tablet',
         'URL Gambar': 'https://example.com/image.jpg'
       }
     ];
@@ -28,7 +30,7 @@ export const excelUtils = {
     XLSX.writeFile(wb, 'Template_MediCatalog.xlsx');
   },
 
-  parseExcelFile: async (file: File, categories: string[] = DEFAULT_CATEGORIES): Promise<Partial<Product>[]> => {
+  parseExcelFile: async (file: File, categories: string[] = DEFAULT_CATEGORIES): Promise<Omit<Product, 'id' | 'createdAt' | 'updatedAt'>[]> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -39,7 +41,7 @@ export const excelUtils = {
           const worksheet = workbook.Sheets[firstSheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet) as any[];
 
-          const products: Partial<Product>[] = jsonData.map(row => {
+          const products: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>[] = jsonData.map(row => {
             const rowCategory = String(row.Kategori || '');
             const defaultCat = categories.length > 0 ? categories[0] : 'Umum';
             
@@ -48,15 +50,17 @@ export const excelUtils = {
               description: String(row.Deskripsi || ''),
               category: (categories.includes(rowCategory) ? rowCategory : defaultCat) as Category,
               priceMedis: Number(row['Harga Medis'] || 0),
-              pricePromo: row['Harga Promo'] ? Number(row['Harga Promo']) : undefined,
-              priceMB: row['Harga MB'] ? Number(row['Harga MB']) : undefined,
-              priceKhusus: row['Harga Khusus'] ? Number(row['Harga Khusus']) : undefined,
-              priceHKOTC: row['Harga HK OTC'] ? Number(row['Harga HK OTC']) : undefined,
-              stock: Number(row.Stok || 0),
+              pricePromo: row['Harga Promo'] ? Number(row['Harga Promo']) : 0,
+              priceMB: row['Harga MB'] ? Number(row['Harga MB']) : 0,
+              priceKhusus: row['Harga Khusus'] ? Number(row['Harga Khusus']) : 0,
+              priceHKOTC: row['Harga HK OTC'] ? Number(row['Harga HK OTC']) : 0,
               isPromo: String(row['Is Promo (Y/N)']).toUpperCase() === 'Y',
               promoText: String(row['Promo Text'] || ''),
               isBundling: String(row['Is Bundling (Y/N)']).toUpperCase() === 'Y',
               bundlingItems: String(row['Isi Paket Bundling'] || ''),
+              benefits: String(row.Khasiat || ''),
+              ingredients: String(row.Kandungan || ''),
+              usageInstructions: String(row['Aturan Pakai'] || ''),
               imageUrl: String(row['URL Gambar'] || '')
             };
           });
