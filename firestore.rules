@@ -1,0 +1,81 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isEmailVerified() && (
+        request.auth.token.email == 'assyfachanel99@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Product Validation
+    function isValidProduct(p) {
+      return p.name is string && p.name.size() > 0 && p.name.size() <= 200 &&
+             p.category is string && p.category.size() > 0 && p.category.size() <= 50 &&
+             p.description is string && p.description.size() <= 2000 &&
+             p.priceMedis is number && p.priceMedis >= 0 &&
+             p.stock is number && p.stock >= 0 &&
+             (p.imageUrl == null || (p.imageUrl is string && p.imageUrl.size() <= 1000000)) &&
+             p.isPromo is bool &&
+             (p.isBundling == null || p.isBundling is bool) &&
+             (p.bundlingItems == null || (p.bundlingItems is string && p.bundlingItems.size() <= 500)) &&
+             (p.pricePromo == null || p.pricePromo is number) &&
+             (p.priceMB == null || p.priceMB is number) &&
+             (p.priceKhusus == null || p.priceKhusus is number) &&
+             (p.priceHKOTC == null || p.priceHKOTC is number) &&
+             (p.promoText == null || (p.promoText is string && p.promoText.size() <= 100));
+    }
+
+    // Settings Validation
+    function isValidSettings(s) {
+      return (s.adminPin == null || (s.adminPin is string && s.adminPin.size() <= 10)) &&
+             (s.appName == null || (s.appName is string && s.appName.size() <= 100)) &&
+             (s.logoUrl == null || (s.logoUrl is string && s.logoUrl.size() <= 500000)) &&
+             (s.contactNumber == null || (s.contactNumber is string && s.contactNumber.size() <= 50));
+    }
+
+    // Products Collection
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Settings Collection
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    
+    // For test connection
+    match /test/connection {
+      allow get: if true;
+    }
+  }
+}

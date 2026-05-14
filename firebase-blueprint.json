@@ -1,0 +1,49 @@
+{
+  "entities": {
+    "product": {
+      "title": "Product",
+      "description": "A medicine or health product in the catalog.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Name of the product" },
+        "description": { "type": "string", "description": "Detailed description" },
+        "category": { "type": "string", "description": "Product category" },
+        "priceMedis": { "type": "number", "description": "Harga Medis" },
+        "pricePromo": { "type": "number", "description": "Harga Promo" },
+        "priceMB": { "type": "number", "description": "Harga MB" },
+        "priceKhusus": { "type": "number", "description": "Harga Khusus" },
+        "priceHKOTC": { "type": "number", "description": "Harga HK OTC" },
+        "imageUrl": { "type": "string", "description": "URL to product image" },
+        "stock": { "type": "number", "description": "Remaining stock" },
+        "isPromo": { "type": "boolean", "description": "Whether the product is currently on promotion" },
+        "isBundling": { "type": "boolean", "description": "Whether the product is a bundle package" },
+        "bundlingItems": { "type": "string", "description": "Details of items included in the bundle" },
+        "promoText": { "type": "string", "description": "Short text for the promo badge" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "category", "priceMedis", "stock"]
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "System settings like admin PIN and company branding.",
+      "type": "object",
+      "properties": {
+        "adminPin": { "type": "string" },
+        "appName": { "type": "string", "description": "Display name of the application" },
+        "logoUrl": { "type": "string", "description": "URL or Base64 of the company logo" },
+        "contactNumber": { "type": "string", "description": "Company contact phone number" }
+      }
+    }
+  },
+  "firestore": {
+    "products": {
+      "schema": "product",
+      "description": "Collection of all medicine products."
+    },
+    "settings": {
+      "schema": "settings",
+      "description": "System wide settings."
+    }
+  }
+}
