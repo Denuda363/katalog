@@ -24,7 +24,8 @@ import { productService } from '../services/productService';
 import { settingsService, AppSettings } from '../services/settingsService';
 import { useAuth } from '../context/AuthContext';
 import { excelUtils } from '../lib/excelUtils';
-import { Product, MEDICINE_CATEGORIES, Category } from '../types';
+import { categoryService, CategoryItem } from '../services/categoryService';
+import { Product, Category } from '../types';
 import { cn, formatCurrency } from '../lib/utils';
 
 export const Admin = () => {
@@ -35,11 +36,16 @@ export const Admin = () => {
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [search, setSearch] = useState('');
   const [isImporting, setIsImporting] = useState(false);
-  const { settings, refreshSettings } = useAuth();
+  const { settings, categories, refreshSettings, refreshCategories } = useAuth();
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [newPin, setNewPin] = useState('');
   
+  // Category Management State
+  const [categoryName, setCategoryName] = useState('');
+  const [editingCategory, setEditingCategory] = useState<CategoryItem | null>(null);
+
   // App Settings Form
   const [settingsForm, setSettingsForm] = useState({
     appName: '',
@@ -51,7 +57,7 @@ export const Admin = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    category: MEDICINE_CATEGORIES[0] as Category,
+    category: '',
     priceMedis: 0,
     pricePromo: 0,
     priceMB: 0,
@@ -64,6 +70,12 @@ export const Admin = () => {
     bundlingItems: '',
     promoText: ''
   });
+
+  useEffect(() => {
+    if (categories.length > 0 && !formData.category) {
+      setFormData(prev => ({ ...prev, category: categories[0].name }));
+    }
+  }, [categories]);
 
   useEffect(() => {
     fetchProducts();
@@ -107,7 +119,7 @@ export const Admin = () => {
       setFormData({
         name: '',
         description: '',
-        category: MEDICINE_CATEGORIES[0] as Category,
+        category: categories.length > 0 ? categories[0].name : '',
         priceMedis: 0,
         pricePromo: 0,
         priceMB: 0,
@@ -182,6 +194,40 @@ export const Admin = () => {
     }
   };
 
+  const handleCategoryAction = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!categoryName.trim()) return;
+
+    try {
+      if (editingCategory) {
+        await categoryService.updateCategory(editingCategory.id, categoryName);
+        setMessage({ type: 'success', text: 'Kategori berhasil diperbarui' });
+      } else {
+        await categoryService.addCategory(categoryName, categories.length);
+        setMessage({ type: 'success', text: 'Kategori baru ditambahkan' });
+      }
+      setCategoryName('');
+      setEditingCategory(null);
+      await refreshCategories();
+      setTimeout(() => setMessage(null), 3000);
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Gagal memproses kategori' });
+    }
+  };
+
+  const handleDeleteCategory = async (id: string, name: string) => {
+    if (window.confirm(`Hapus kategori "${name}"? Ini tidak akan menghapus produk dalam kategori ini.`)) {
+      try {
+        await categoryService.deleteCategory(id);
+        setMessage({ type: 'success', text: 'Kategori dihapus' });
+        await refreshCategories();
+        setTimeout(() => setMessage(null), 3000);
+      } catch (err) {
+        setMessage({ type: 'error', text: 'Gagal menghapus kategori' });
+      }
+    }
+  };
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, field: 'product' | 'logo') => {
     const file = e.target.files?.[0];
     if (file) {
@@ -208,7 +254,7 @@ export const Admin = () => {
 
     setIsImporting(true);
     try {
-      const importedProducts = await excelUtils.parseExcelFile(file);
+      const importedProducts = await excelUtils.parseExcelFile(file, categories.map(c => c.name));
       
       // Batch upload (simplified for now by iterating)
       for (const productData of importedProducts) {
@@ -242,7 +288,7 @@ export const Admin = () => {
           </div>
           <div className="flex flex-wrap items-center gap-4">
             <button
-              onClick={() => excelUtils.downloadTemplate()}
+              onClick={() => excelUtils.downloadTemplate(categories.map(c => c.name))}
               className="flex items-center gap-3 bg-indigo-50 text-indigo-700 px-6 py-4 rounded-2xl font-bold hover:bg-indigo-100 transition-all active:scale-95 text-sm"
             >
               <FileDown size={20} />
@@ -263,6 +309,13 @@ export const Admin = () => {
             >
               <Settings size={20} />
               Branding
+            </button>
+            <button
+              onClick={() => setIsCategoryModalOpen(true)}
+              className="flex items-center gap-3 bg-slate-100 text-slate-700 px-6 py-4 rounded-2xl font-bold hover:bg-slate-200 transition-all active:scale-95 text-sm"
+            >
+              <Tag size={20} />
+              Kategori
             </button>
             <button
               onClick={() => setIsPinModalOpen(true)}
@@ -494,10 +547,10 @@ export const Admin = () => {
                       <select 
                         className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 outline-none transition-all text-sm font-medium appearance-none"
                         value={formData.category}
-                        onChange={(e) => setFormData({...formData, category: e.target.value as Category})}
+                        onChange={(e) => setFormData({...formData, category: e.target.value})}
                       >
-                        {MEDICINE_CATEGORIES.map(cat => (
-                          <option key={cat} value={cat}>{cat}</option>
+                        {categories.map(cat => (
+                          <option key={cat.id} value={cat.name}>{cat.name}</option>
                         ))}
                       </select>
                     </div>
@@ -731,6 +784,97 @@ export const Admin = () => {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Category Management Modal */}
+      <AnimatePresence>
+        {isCategoryModalOpen && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsCategoryModalOpen(false)}
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 30 }}
+              className="relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl p-10 border border-white max-h-[90vh] flex flex-col"
+            >
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900">Kategori Obat</h2>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Kelola klasifikasi farmasi</p>
+                </div>
+                <button onClick={() => {
+                  setIsCategoryModalOpen(false);
+                  setEditingCategory(null);
+                  setCategoryName('');
+                }} className="p-2 text-slate-400 hover:bg-slate-50 rounded-full">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <form onSubmit={handleCategoryAction} className="mb-8 p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">
+                  {editingCategory ? 'Edit Nama Kategori' : 'Tambah Kategori Baru'}
+                </label>
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: Suplemen Mata"
+                    className="flex-1 px-5 py-3.5 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 outline-none transition-all text-sm font-bold"
+                    value={categoryName}
+                    onChange={(e) => setCategoryName(e.target.value)}
+                  />
+                  <button
+                    type="submit"
+                    className="px-6 py-3.5 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
+                  >
+                    {editingCategory ? <Save size={18} /> : <Plus size={18} />}
+                    {editingCategory ? 'Update' : 'Tambah'}
+                  </button>
+                </div>
+                {editingCategory && (
+                  <button 
+                    type="button" 
+                    onClick={() => { setEditingCategory(null); setCategoryName(''); }}
+                    className="mt-3 text-[10px] font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest"
+                  >
+                    Batalkan Edit
+                  </button>
+                )}
+              </form>
+
+              <div className="overflow-y-auto flex-grow pr-2 scrollbar-hide">
+                <div className="space-y-3">
+                  {categories.map((cat) => (
+                    <div key={cat.id} className="flex items-center justify-between p-5 bg-white border border-slate-100 rounded-2xl hover:border-teal-100 transition-all group">
+                      <span className="font-bold text-slate-700">{cat.name}</span>
+                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button 
+                          onClick={() => { setEditingCategory(cat); setCategoryName(cat.name); }}
+                          className="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-xl transition-all"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteCategory(cat.id, cat.name)}
+                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </motion.div>
           </div>
         )}

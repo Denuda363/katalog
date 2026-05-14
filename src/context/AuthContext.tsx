@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 import { settingsService, AppSettings } from '../services/settingsService';
+import { categoryService, CategoryItem } from '../services/categoryService';
 
 interface AuthContextType {
   isAdmin: boolean;
@@ -8,7 +9,9 @@ interface AuthContextType {
   logout: () => void;
   loading: boolean;
   settings: AppSettings | null;
+  categories: CategoryItem[];
   refreshSettings: () => Promise<void>;
+  refreshCategories: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({ 
@@ -17,17 +20,25 @@ const AuthContext = createContext<AuthContextType>({
   logout: () => {}, 
   loading: true,
   settings: null,
-  refreshSettings: async () => {}
+  categories: [],
+  refreshSettings: async () => {},
+  refreshCategories: async () => {}
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState<AppSettings | null>(null);
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
 
   const refreshSettings = async () => {
     const data = await settingsService.getSettings();
     setSettings(data);
+  };
+
+  const refreshCategories = async () => {
+    const data = await categoryService.getCategories();
+    setCategories(data);
   };
 
   useEffect(() => {
@@ -35,7 +46,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (saved === 'true') {
       setIsAdmin(true);
     }
-    refreshSettings().then(() => setLoading(false));
+    
+    Promise.all([
+      refreshSettings(),
+      refreshCategories()
+    ]).then(() => setLoading(false));
   }, []);
 
   const login = async (pin: string) => {
@@ -50,7 +65,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ isAdmin, login, logout, loading, settings, refreshSettings }}>
+    <AuthContext.Provider value={{ 
+      isAdmin, 
+      login, 
+      logout, 
+      loading, 
+      settings, 
+      categories, 
+      refreshSettings,
+      refreshCategories 
+    }}>
       {!loading && children}
     </AuthContext.Provider>
   );

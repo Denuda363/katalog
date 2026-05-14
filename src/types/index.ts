@@ -18,9 +18,9 @@ export interface Product {
   updatedAt: any;
 }
 
-export type Category = 'Obat Bebas' | 'Obat Terbatas' | 'Obat Keras' | 'Vitamin' | 'Alat Kesehatan' | 'Lainnya';
+export type Category = string;
 
-export const MEDICINE_CATEGORIES: Category[] = [
+export const DEFAULT_CATEGORIES: Category[] = [
   'Obat Bebas',
   'Obat Terbatas',
   'Obat Keras',

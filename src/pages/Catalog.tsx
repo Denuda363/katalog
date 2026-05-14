@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Search, Filter, SlidersHorizontal, PackageOpen } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard';
 import { productService } from '../services/productService';
-import { Product, MEDICINE_CATEGORIES, Category } from '../types';
+import { useAuth } from '../context/AuthContext';
+import { Product, Category } from '../types';
 import { cn } from '../lib/utils';
 
 export const Catalog = () => {
@@ -11,6 +12,16 @@ export const Catalog = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category | 'Semua'>('Semua');
+  const { categories, settings } = useAuth();
+
+  const handleChatWhatsApp = () => {
+    if (!settings?.contactNumber) {
+      alert('Nomor kontak belum diatur.');
+      return;
+    }
+    const cleanNumber = settings.contactNumber.replace(/[^0-9]/g, '');
+    window.open(`https://wa.me/${cleanNumber}?text=${encodeURIComponent('Halo, saya butuh bantuan konsultasi apoteker.')}`, '_blank');
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -68,19 +79,19 @@ export const Catalog = () => {
             <div className={cn("w-1.5 h-1.5 rounded-full transition-all", selectedCategory === 'Bundling' ? "bg-indigo-600 scale-100" : "bg-slate-300 scale-0")} />
             Paket Bundling
           </button>
-          {MEDICINE_CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat as any)}
+              key={cat.id}
+              onClick={() => setSelectedCategory(cat.name)}
               className={cn(
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all italic",
-                selectedCategory === cat 
+                selectedCategory === cat.name 
                   ? "bg-teal-50 text-teal-700" 
                   : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
               )}
             >
-              <div className={cn("w-1.5 h-1.5 rounded-full transition-all", selectedCategory === cat ? "bg-teal-600 scale-100" : "bg-slate-300 scale-0")} />
-              {cat}
+              <div className={cn("w-1.5 h-1.5 rounded-full transition-all", selectedCategory === cat.name ? "bg-teal-600 scale-100" : "bg-slate-300 scale-0")} />
+              {cat.name}
             </button>
           ))}
         </div>
@@ -90,7 +101,7 @@ export const Catalog = () => {
           <div className="relative z-10">
             <p className="text-[10px] text-slate-400 uppercase tracking-wider font-bold mb-1">Butuh bantuan?</p>
             <p className="text-xs font-medium mb-4 text-slate-200">Konsultasi gratis dengan apoteker kami.</p>
-            <button className="w-full py-2.5 bg-teal-500 hover:bg-teal-400 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-colors">
+            <button onClick={handleChatWhatsApp} className="w-full py-2.5 bg-teal-500 hover:bg-teal-400 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-colors">
               Chat Sekarang
             </button>
           </div>
@@ -121,18 +132,40 @@ export const Catalog = () => {
 
         {/* Mobile Category Scroll */}
         <div className="flex md:hidden items-center gap-2 overflow-x-auto pb-6 scrollbar-hide">
-          {['Semua', 'Bundling', ...MEDICINE_CATEGORIES].map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat as any)}
+          <button
+              onClick={() => setSelectedCategory('Semua')}
               className={cn(
                 "px-5 py-2.5 rounded-2xl text-xs font-bold transition-all whitespace-nowrap",
-                selectedCategory === cat 
-                  ? (cat === 'Bundling' ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" : "bg-teal-600 text-white shadow-lg shadow-teal-600/20")
+                selectedCategory === 'Semua' 
+                  ? "bg-teal-600 text-white shadow-lg shadow-teal-600/20" 
                   : "bg-white text-slate-500 border border-slate-200"
               )}
             >
-              {cat}
+              Semua
+          </button>
+          <button
+              onClick={() => setSelectedCategory('Bundling')}
+              className={cn(
+                "px-5 py-2.5 rounded-2xl text-xs font-bold transition-all whitespace-nowrap",
+                selectedCategory === 'Bundling' 
+                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" 
+                  : "bg-white text-slate-500 border border-slate-200"
+              )}
+            >
+              Bundling
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setSelectedCategory(cat.name)}
+              className={cn(
+                "px-5 py-2.5 rounded-2xl text-xs font-bold transition-all whitespace-nowrap",
+                selectedCategory === cat.name 
+                  ? "bg-teal-600 text-white shadow-lg shadow-teal-600/20" 
+                  : "bg-white text-slate-500 border border-slate-200"
+              )}
+            >
+              {cat.name}
             </button>
           ))}
         </div>

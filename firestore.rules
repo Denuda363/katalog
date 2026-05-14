@@ -67,6 +67,12 @@ service cloud.firestore {
       allow write: if true;
     }
 
+    // Categories Collection
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
     // Settings Collection
     match /settings/{settingId} {
       allow read: if true;

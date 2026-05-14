@@ -24,6 +24,16 @@
       },
       "required": ["name", "category", "priceMedis", "stock"]
     },
+    "category": {
+      "title": "Category",
+      "description": "Medicine category definition.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Display name of the category" },
+        "order": { "type": "number", "description": "Display order" }
+      },
+      "required": ["name"]
+    },
     "settings": {
       "title": "Settings",
       "description": "System settings like admin PIN and company branding.",
@@ -40,6 +50,10 @@
     "products": {
       "schema": "product",
       "description": "Collection of all medicine products."
+    },
+    "categories": {
+      "schema": "category",
+      "description": "Dynamic medicine categories."
     },
     "settings": {
       "schema": "settings",
