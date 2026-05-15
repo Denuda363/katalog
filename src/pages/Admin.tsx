@@ -215,6 +215,23 @@ export const Admin = () => {
     }
   };
 
+  const handleResetData = async () => {
+    if (window.confirm('PERINGATAN: Ini akan menghapus SELURUH katalog produk secara permanen. Tindakan ini tidak dapat dibatalkan. Apakah Anda yakin?')) {
+      try {
+        setLoading(true);
+        await productService.resetData();
+        setMessage({ type: 'success', text: 'Database produk berhasil di-reset sepenuhnya' });
+        setIsSettingsModalOpen(false);
+        fetchProducts();
+        setTimeout(() => setMessage(null), 3000);
+      } catch (err) {
+        setMessage({ type: 'error', text: 'Gagal melakukan reset data' });
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   const handleCategoryAction = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!categoryName.trim()) return;
@@ -1293,6 +1310,35 @@ export const Admin = () => {
                     <Save size={20} className="text-teal-400" />
                     Commit Environment Settings
                   </motion.button>
+                </div>
+
+                {/* Danger Zone */}
+                <div className="pt-10 border-t border-slate-100 mt-10">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-2 h-2 rounded-full bg-red-500" />
+                    <p className="text-[10px] font-black text-red-600 uppercase tracking-widest">Danger Zone (Sensitive Operations)</p>
+                  </div>
+                  <div className="p-8 bg-red-50 rounded-[2.5rem] border border-red-100 space-y-6">
+                    <div className="flex items-start gap-4">
+                      <div className="p-3 bg-white rounded-2xl text-red-500 shadow-sm shrink-0">
+                        <Trash2 size={24} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-black text-slate-900 italic tracking-tighter">Reset Seluruh Katalog</h4>
+                        <p className="text-[10px] text-slate-500 font-medium leading-relaxed mt-1">
+                          Operasi ini akan menghapus semua produk dari database. Gunakan fitur ini jika Anda ingin memulai ulang katalog dari awal atau melakukan pembersihan total.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleResetData}
+                      disabled={loading}
+                      className="w-full py-4 bg-white text-red-600 border border-red-100 rounded-2xl font-black uppercase tracking-widest text-[9px] hover:bg-red-600 hover:text-white transition-all shadow-sm"
+                    >
+                      {loading ? 'Processing Reset...' : 'Wipe All Product Data'}
+                    </button>
+                  </div>
                 </div>
               </form>
             </motion.div>

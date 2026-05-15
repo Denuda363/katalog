@@ -122,5 +122,16 @@ export const productService = {
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, `${COLLECTION_NAME}/${id}`);
     }
+  },
+
+  async resetData() {
+    try {
+      const snapshot = await getDocs(collection(db, COLLECTION_NAME));
+      const deletePromises = snapshot.docs.map(document => deleteDoc(doc(db, COLLECTION_NAME, document.id)));
+      await Promise.all(deletePromises);
+      return true;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, COLLECTION_NAME);
+    }
   }
 };
