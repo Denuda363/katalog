@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Plus, Tag, MessageCircle } from 'lucide-react';
+import { Tag } from 'lucide-react';
 import { Product } from '../types';
-import { cn, formatCurrency } from '../lib/utils';
+import { cn, formatCurrency, isPromoActive } from '../lib/utils';
 import { useAuth } from '../context/AuthContext';
 
 interface ProductCardProps {
@@ -11,20 +11,10 @@ interface ProductCardProps {
   onClick?: (product: Product) => void;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onClick }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
   const { settings } = useAuth();
+  const activePromo = isPromoActive(product);
   
-  const handleChatWhatsApp = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!settings?.contactNumber) {
-      alert('Nomor kontak belum diatur oleh admin.');
-      return;
-    }
-    const cleanNumber = settings.contactNumber.replace(/[^0-9]/g, '');
-    const message = encodeURIComponent(`Halo, saya tertarik dengan produk ${product.name}. Bisakah saya mendapatkan informasi lebih lanjut?`);
-    window.open(`https://wa.me/${cleanNumber}?text=${message}`, '_blank');
-  };
-
   return (
     <motion.div
       layout
@@ -44,7 +34,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
         
         {/* Badges */}
         <div className="absolute top-2 left-2 right-2 flex items-center justify-between pointer-events-none">
-          {product.isPromo && (
+          {activePromo && product.isPromo && (
             <div className="bg-white/90 backdrop-blur-md text-teal-600 text-[7px] font-black px-2 py-1 rounded-full flex items-center gap-1 border border-white uppercase tracking-[0.15em] shadow-lg shadow-teal-900/5">
               <Tag size={8} strokeWidth={3} />
               {product.promoText || 'PROMO'}
@@ -62,14 +52,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
           <h4 className="text-base font-black text-slate-900 leading-[1.2] group-hover:text-teal-600 transition-colors tracking-tight italic line-clamp-2">
             {product.name}
           </h4>
-          {product.isBundling && (
+          {activePromo && product.isBundling && (
             <div className="px-2 py-0.5 bg-indigo-600 text-white rounded text-[6px] font-black uppercase tracking-[0.1em] mt-0.5 shrink-0">
               Bundle
             </div>
           )}
         </div>
         
-        {product.isBundling && product.bundlingItems ? (
+        {activePromo && product.isBundling && product.bundlingItems ? (
           <div className="p-2.5 bg-indigo-50/50 border border-indigo-100/50 rounded-xl mb-4 overflow-y-auto max-h-16 pr-1">
              <p className="text-[7px] font-black text-indigo-400 uppercase tracking-[0.15em] mb-1 leading-none">Isi Paket</p>
              <p className="text-[9px] text-indigo-900 font-bold leading-tight italic">{product.bundlingItems}</p>
@@ -80,46 +70,28 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
           </p>
         )}
 
-        <div className="mt-auto flex items-center justify-between gap-2 pt-4 border-t border-slate-50/50">
-          <div className="flex flex-col min-w-0">
-            {product.isPromo && product.pricePromo ? (
+        <div className="mt-auto pt-4 border-t border-slate-50/50">
+          <div className="flex flex-col">
+            {activePromo && product.isPromo && product.pricePromo ? (
               <>
                 <p className="text-[8px] text-slate-300 line-through leading-none font-black mb-1 uppercase tracking-wider truncate">
                   {formatCurrency(product.priceMedis)}
                 </p>
-                <p className="text-base font-black text-teal-600 tracking-tighter italic truncate">
+                <p className="text-lg font-black text-teal-600 tracking-tighter italic truncate">
                   {formatCurrency(product.pricePromo)}
                 </p>
               </>
             ) : (
-              <p className="text-base font-black text-slate-900 tracking-tighter italic truncate">
+              <p className="text-lg font-black text-slate-900 tracking-tighter italic truncate">
                 {formatCurrency(product.priceMedis)}
               </p>
             )}
-          </div>
-          
-          <div className="flex items-center gap-1.5 shrink-0">
-            <motion.button 
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={handleChatWhatsApp}
-              className="w-9 h-9 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center hover:bg-teal-600 hover:text-white transition-all shadow-sm"
-              title="Chat WA"
-            >
-              <MessageCircle size={16} strokeWidth={2.5} />
-            </motion.button>
-            <motion.button 
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={(e) => {
-                e.stopPropagation();
-                onAddToCart?.(product);
-              }}
-              className="w-9 h-9 bg-slate-900 text-white rounded-xl flex items-center justify-center hover:bg-teal-600 transition-all shadow-md shadow-slate-900/10"
-              title="Tambah"
-            >
-              <Plus size={16} strokeWidth={2.5} />
-            </motion.button>
+            {product.units && product.units.length > 0 && (
+              <span className="text-[7px] font-black text-indigo-500 uppercase tracking-[0.2em] mt-1.5 flex items-center gap-1.5">
+                <div className="w-1 h-1 rounded-full bg-indigo-400" />
+                Varian Satuan
+              </span>
+            )}
           </div>
         </div>
       </div>

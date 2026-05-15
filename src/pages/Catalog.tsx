@@ -76,7 +76,7 @@ export const Catalog = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
-              className="text-4xl sm:text-6xl md:text-[8rem] font-black text-slate-900 leading-[0.85] tracking-tighter mb-8 italic"
+              className="text-4xl sm:text-6xl md:text-[8rem] font-black text-slate-900 leading-[0.9] md:leading-[0.85] tracking-tighter mb-8 italic"
             >
               Eksplorasi <br />
               <span className="text-teal-600">Terapi &</span> Nutrisi.

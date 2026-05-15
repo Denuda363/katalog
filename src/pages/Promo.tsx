@@ -5,6 +5,7 @@ import { ProductCard } from '../components/ProductCard';
 import { productService } from '../services/productService';
 import { useAuth } from '../context/AuthContext';
 import { Product } from '../types';
+import { isPromoActive } from '../lib/utils';
 
 export const Promo = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -15,7 +16,10 @@ export const Promo = () => {
     const fetchPromos = async () => {
       setLoading(true);
       const data = await productService.getPromoProducts();
-      if (data) setProducts(data);
+      if (data) {
+        const activePromos = data.filter(p => isPromoActive(p));
+        setProducts(activePromos);
+      }
       setLoading(false);
     };
     fetchPromos();
@@ -32,7 +36,7 @@ export const Promo = () => {
               className="flex items-center gap-2 mb-6 px-4 py-1.5 bg-teal-500/20 w-fit rounded-full text-[10px] font-bold tracking-widest uppercase border border-teal-500/30"
             >
               <Sparkles size={14} className="text-teal-400" />
-              Special Offers Only
+              Promo & Bundling deals
             </motion.div>
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
@@ -47,7 +51,7 @@ export const Promo = () => {
               transition={{ delay: 0.2 }}
               className="text-slate-400 text-lg md:text-xl max-w-lg mb-0"
             >
-              Hemat lebih banyak untuk produk kesehatan esensial keluarga Anda. Exclusive Offer!
+              Hemat lebih banyak dengan promo spesial dan paket bundling hemat untuk produk kesehatan keluarga Anda.
             </motion.p>
           </div>
 
@@ -62,9 +66,9 @@ export const Promo = () => {
         <div className="flex items-center justify-between mb-8 px-4">
           <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-3">
             <div className="w-10 h-10 bg-teal-100 rounded-xl flex items-center justify-center text-teal-600">
-              <Tag size={20} />
+              <Sparkles size={20} />
             </div>
-            Daftar Produk Promo
+            Promo & Paket Bundling
           </h2>
           <div className="text-sm font-bold text-teal-600 bg-teal-50 px-4 py-1.5 rounded-full">
             {products.length} Aktif
@@ -83,7 +87,7 @@ export const Promo = () => {
         ) : products.length > 0 ? (
           <motion.div 
             layout
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-4"
+            className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 px-4"
           >
             <AnimatePresence mode="popLayout">
               {products.map((product) => (

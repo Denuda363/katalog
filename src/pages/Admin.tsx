@@ -72,7 +72,11 @@ export const Admin = () => {
     benefits: '',
     ingredients: '',
     usageInstructions: '',
-    promoText: ''
+    promoText: '',
+    promoStartDate: '',
+    promoEndDate: '',
+    packaging: '',
+    units: [] as { name: string, price: number }[]
   });
 
   useEffect(() => {
@@ -119,7 +123,11 @@ export const Admin = () => {
         benefits: product.benefits || '',
         ingredients: product.ingredients || '',
         usageInstructions: product.usageInstructions || '',
-        promoText: product.promoText || ''
+        promoText: product.promoText || '',
+        promoStartDate: product.promoStartDate || '',
+        promoEndDate: product.promoEndDate || '',
+        packaging: product.packaging || '',
+        units: product.units || []
       });
     } else {
       setEditingProduct(null);
@@ -139,7 +147,11 @@ export const Admin = () => {
         benefits: '',
         ingredients: '',
         usageInstructions: '',
-        promoText: ''
+        promoText: '',
+        promoStartDate: '',
+        promoEndDate: '',
+        packaging: '',
+        units: []
       });
     }
     setIsModalOpen(true);
@@ -462,7 +474,8 @@ export const Admin = () => {
         )}
 
         <div className="bg-white rounded-[3rem] shadow-2xl shadow-slate-200/40 border border-slate-100 overflow-hidden mb-20">
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden xl:block overflow-x-auto">
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-slate-50/80 backdrop-blur-md sticky top-0 z-10">
@@ -509,14 +522,36 @@ export const Admin = () => {
                       </td>
                       <td className="px-10 py-8">
                         <div className="space-y-1.5">
-                          <div className="text-sm font-black text-slate-950 italic">
-                            {formatCurrency(product.priceMedis)}
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest min-w-[40px]">Medis</span>
+                            <div className="text-sm font-black text-slate-950 italic">
+                              {formatCurrency(product.priceMedis)}
+                            </div>
                           </div>
+                          
                           {product.isPromo && (
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-teal-50 text-teal-600 rounded-lg text-[10px] font-black border border-teal-100">
-                               <Tag size={10} /> {formatCurrency(product.pricePromo || 0)}
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-black text-teal-400 uppercase tracking-widest min-w-[40px]">Promo</span>
+                              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-teal-50 text-teal-600 rounded-lg text-[10px] font-black border border-teal-100">
+                                <Tag size={10} /> {formatCurrency(product.pricePromo || 0)}
+                              </div>
                             </div>
                           )}
+
+                          <div className="pt-2 mt-2 border-t border-slate-50 space-y-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest min-w-[40px]">MB</span>
+                              <span className="text-[11px] font-bold text-slate-600 italic">{formatCurrency(product.priceMB || 0)}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest min-w-[40px]">Khusus</span>
+                              <span className="text-[11px] font-bold text-slate-600 italic">{formatCurrency(product.priceKhusus || 0)}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest min-w-[40px]">HK OTC</span>
+                              <span className="text-[11px] font-bold text-slate-600 italic">{formatCurrency(product.priceHKOTC || 0)}</span>
+                            </div>
+                          </div>
                         </div>
                       </td>
                       <td className="px-10 py-8">
@@ -539,6 +574,11 @@ export const Admin = () => {
                               <div className="w-1.5 h-1.5 rounded-full bg-white animate-ping" /> PROMO
                             </span>
                             <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest pl-1">{product.promoText || 'Spesial'}</p>
+                            {(product.promoStartDate || product.promoEndDate) && (
+                              <p className="text-[7px] text-teal-600/60 font-black tracking-tighter pl-1">
+                                {product.promoStartDate || '?'} - {product.promoEndDate || '?'}
+                              </p>
+                            )}
                           </div>
                         ) : (
                           <span className="text-[9px] font-black px-4 py-1.5 bg-slate-50 text-slate-300 rounded-full uppercase tracking-[0.2em] border border-slate-100">
@@ -592,13 +632,59 @@ export const Admin = () => {
               </tbody>
             </table>
           </div>
+
+          {/* Mobile Card View */}
+          <div className="xl:hidden grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
+            {loading ? (
+               Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="bg-slate-50 rounded-3xl h-48 animate-pulse" />
+              ))
+            ) : filteredProducts.length > 0 ? (
+              filteredProducts.map((product) => (
+                <div key={product.id} className="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-all">
+                  <div className="flex gap-4 mb-6">
+                    <div className="w-20 h-20 bg-slate-50 rounded-2xl overflow-hidden shrink-0 border border-slate-100">
+                      <img src={product.imageUrl || `https://placehold.co/400?text=${encodeURIComponent(product.name)}`} alt="" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[8px] font-black text-teal-600 uppercase tracking-widest mb-1">{product.category}</p>
+                      <h4 className="text-lg font-black text-slate-900 italic tracking-tight truncate leading-none mb-2">{product.name}</h4>
+                      <p className="text-xl font-black text-slate-950 italic tracking-tighter">{formatCurrency(product.priceMedis)}</p>
+                      {product.isPromo && (product.promoStartDate || product.promoEndDate) && (
+                        <p className="text-[8px] font-black text-teal-500/80 mt-1 uppercase tracking-widest">Active: {product.promoStartDate || '?'} to {product.promoEndDate || '?'}</p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+                    <div className="flex gap-2">
+                       {product.isPromo && <span className="px-2.5 py-1 bg-teal-50 text-teal-600 rounded-lg text-[8px] font-black uppercase tracking-widest">PROMO</span>}
+                       {product.isBundling && <span className="px-2.5 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[8px] font-black uppercase tracking-widest">BUNDLING</span>}
+                    </div>
+                    <div className="flex gap-3">
+                      <button onClick={() => handleOpenModal(product)} className="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:text-teal-600 transition-colors">
+                        <Pencil size={18} />
+                      </button>
+                      <button onClick={() => handleDelete(product.id!)} className="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-300 rounded-xl hover:text-red-500 transition-colors">
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full py-20 text-center">
+                 <p className="text-slate-400 font-bold italic">Tidak ada produk ditemukan.</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Modal Form */}
       <AnimatePresence>
         {isModalOpen && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-8">
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -610,27 +696,27 @@ export const Admin = () => {
               initial={{ opacity: 0, scale: 0.95, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 30 }}
-              className="relative w-full max-w-4xl bg-white rounded-[3rem] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col border border-white"
+              className="relative w-full max-w-4xl bg-white rounded-[2.5rem] md:rounded-[3rem] shadow-2xl overflow-hidden max-h-[92vh] flex flex-col border border-white"
             >
-              <div className="p-10 border-b border-slate-50 flex items-center justify-between bg-slate-50/30 backdrop-blur-md">
+              <div className="p-6 md:p-10 border-b border-slate-50 flex items-center justify-between bg-slate-50/30 backdrop-blur-md">
                 <div>
-                  <h2 className="text-3xl font-black text-slate-950 italic tracking-tighter leading-none">
+                  <h2 className="text-2xl md:text-3xl font-black text-slate-950 italic tracking-tighter leading-none">
                     {editingProduct ? 'Modifikasi' : 'Inisialisasi'} <span className="text-slate-300">/</span> Produk
                   </h2>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mt-2">Data Registry Farmasi v2.0</p>
                 </div>
                 <button 
                   onClick={() => setIsModalOpen(false)}
-                  className="w-12 h-12 flex items-center justify-center text-slate-300 hover:bg-white hover:text-slate-950 rounded-full transition-all shadow-sm bg-white"
+                  className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-slate-300 hover:bg-white hover:text-slate-950 rounded-full transition-all shadow-sm bg-white"
                 >
-                  <X size={24} />
+                  <X size={20} md:size={24} />
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="p-10 overflow-y-auto space-y-12 scrollbar-hide bg-[#fdfdfd]">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
+              <form onSubmit={handleSubmit} className="p-6 md:p-10 overflow-y-auto space-y-10 md:space-y-12 scrollbar-hide bg-[#fdfdfd]">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
                   {/* Left Column: Essential Info */}
-                  <div className="md:col-span-7 space-y-10">
+                  <div className="md:col-span-7 space-y-8 md:space-y-10">
                     <section className="space-y-6">
                       <div className="flex items-center gap-3 mb-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-teal-500" />
@@ -644,7 +730,7 @@ export const Admin = () => {
                           required
                           type="text" 
                           placeholder="Produk Spesifik..."
-                          className="w-full px-6 py-5 bg-white border border-slate-100 rounded-2xl focus:ring-8 focus:ring-teal-500/5 focus:border-teal-500 outline-none transition-all text-sm font-black italic text-slate-900 shadow-sm"
+                          className="w-full px-6 py-4 md:py-5 bg-white border border-slate-100 rounded-2xl focus:ring-8 focus:ring-teal-500/5 focus:border-teal-500 outline-none transition-all text-sm font-black italic text-slate-900 shadow-sm"
                           value={formData.name}
                           onChange={(e) => setFormData({...formData, name: e.target.value})}
                         />
@@ -655,7 +741,7 @@ export const Admin = () => {
                         </label>
                         <div className="relative">
                            <select 
-                            className="w-full px-6 py-5 bg-white border border-slate-100 rounded-2xl focus:ring-8 focus:ring-teal-500/5 focus:border-teal-500 outline-none transition-all text-sm font-black italic text-slate-900 appearance-none shadow-sm cursor-pointer"
+                            className="w-full px-6 py-4 md:py-5 bg-white border border-slate-100 rounded-2xl focus:ring-8 focus:ring-teal-500/5 focus:border-teal-500 outline-none transition-all text-sm font-black italic text-slate-900 appearance-none shadow-sm cursor-pointer"
                             value={formData.category}
                             onChange={(e) => setFormData({...formData, category: e.target.value})}
                           >
@@ -675,10 +761,104 @@ export const Admin = () => {
                         <textarea 
                           rows={4}
                           placeholder="Fungsi utama produk..."
-                          className="w-full px-6 py-5 bg-white border border-slate-100 rounded-2xl focus:ring-8 focus:ring-teal-500/5 focus:border-teal-500 outline-none transition-all text-sm font-medium italic text-slate-600 resize-none shadow-sm"
+                          className="w-full px-6 py-4 md:py-5 bg-white border border-slate-100 rounded-2xl focus:ring-8 focus:ring-teal-500/5 focus:border-teal-500 outline-none transition-all text-sm font-medium italic text-slate-600 resize-none shadow-sm"
                           value={formData.description}
                           onChange={(e) => setFormData({...formData, description: e.target.value})}
                         />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">
+                          Kemasan
+                        </label>
+                        <input 
+                          type="text" 
+                          placeholder="e.g. Box, 3 Strip @ 10 Tablet"
+                          className="w-full px-6 py-4 md:py-5 bg-white border border-slate-100 rounded-2xl focus:ring-8 focus:ring-teal-500/5 focus:border-teal-500 outline-none transition-all text-sm font-black italic text-slate-900 shadow-sm"
+                          value={formData.packaging}
+                          onChange={(e) => setFormData({...formData, packaging: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">
+                          Komposisi / Kandungan
+                        </label>
+                        <textarea 
+                          rows={3}
+                          placeholder="Zat aktif dan pendukung..."
+                          className="w-full px-6 py-4 md:py-5 bg-white border border-slate-100 rounded-2xl focus:ring-8 focus:ring-teal-500/5 focus:border-teal-500 outline-none transition-all text-sm font-medium italic text-slate-600 resize-none shadow-sm"
+                          value={formData.ingredients}
+                          onChange={(e) => setFormData({...formData, ingredients: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">
+                          Khasiat / Manfaat
+                        </label>
+                        <textarea 
+                          rows={3}
+                          placeholder="Manfaat kesehatan produk..."
+                          className="w-full px-6 py-4 md:py-5 bg-white border border-slate-100 rounded-2xl focus:ring-8 focus:ring-teal-500/5 focus:border-teal-500 outline-none transition-all text-sm font-medium italic text-slate-600 resize-none shadow-sm"
+                          value={formData.benefits}
+                          onChange={(e) => setFormData({...formData, benefits: e.target.value})}
+                        />
+                      </div>
+                    </section>
+
+                    <section className="space-y-6">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-teal-500" />
+                        <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Multi Satuan (Multi-Unit)</p>
+                      </div>
+                      <div className="space-y-4">
+                        {formData.units.map((unit, index) => (
+                          <div key={index} className="flex gap-4 items-end bg-white p-4 rounded-2xl border border-slate-100 shadow-sm relative group/unit">
+                            <div className="flex-1">
+                              <label className="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2 font-sans">Nama Satuan</label>
+                              <input 
+                                type="text" 
+                                placeholder="e.g. Box, Lembar, Tablet"
+                                className="w-full py-1 text-xs font-bold text-slate-900 bg-transparent outline-none border-b border-slate-100 focus:border-teal-500 transition-all font-sans"
+                                value={unit.name}
+                                onChange={(e) => {
+                                  const newUnits = [...formData.units];
+                                  newUnits[index].name = e.target.value;
+                                  setFormData({...formData, units: newUnits});
+                                }}
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <label className="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2 font-sans">Harga Satuan</label>
+                              <input 
+                                type="number" 
+                                placeholder="Harga..."
+                                className="w-full py-1 text-xs font-bold text-slate-900 bg-transparent outline-none border-b border-slate-100 focus:border-teal-500 transition-all font-sans"
+                                value={unit.price}
+                                onChange={(e) => {
+                                  const newUnits = [...formData.units];
+                                  newUnits[index].price = Number(e.target.value);
+                                  setFormData({...formData, units: newUnits});
+                                }}
+                              />
+                            </div>
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                const newUnits = formData.units.filter((_, i) => i !== index);
+                                setFormData({...formData, units: newUnits});
+                              }}
+                              className="text-red-300 hover:text-red-500 transition-colors p-1"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        ))}
+                        <button 
+                          type="button"
+                          onClick={() => setFormData({...formData, units: [...formData.units, { name: '', price: 0 }]})}
+                          className="w-full py-4 border-2 border-dashed border-slate-100 rounded-2xl text-[9px] font-black text-slate-400 uppercase tracking-widest hover:border-teal-200 hover:text-teal-500 transition-all flex items-center justify-center gap-3"
+                        >
+                          <Plus size={14} /> Tambah Satuan Lain
+                        </button>
                       </div>
                     </section>
 
@@ -744,7 +924,7 @@ export const Admin = () => {
                               onChange={(e) => setFormData({...formData, priceMedis: Number(e.target.value)})}
                             />
                           </div>
-                          <div className="grid grid-cols-2 gap-4 pt-2">
+                          <div className="grid grid-cols-3 gap-4 pt-2">
                             <div>
                               <label className="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">MB</label>
                               <input 
@@ -761,6 +941,15 @@ export const Admin = () => {
                                 className="w-full py-1 text-sm font-black italic text-slate-600 bg-transparent outline-none border-b border-slate-50 focus:border-slate-300 transition-all"
                                 value={formData.priceKhusus}
                                 onChange={(e) => setFormData({...formData, priceKhusus: Number(e.target.value)})}
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">HK OTC</label>
+                              <input 
+                                type="number" 
+                                className="w-full py-1 text-sm font-black italic text-slate-600 bg-transparent outline-none border-b border-slate-50 focus:border-slate-300 transition-all"
+                                value={formData.priceHKOTC}
+                                onChange={(e) => setFormData({...formData, priceHKOTC: Number(e.target.value)})}
                               />
                             </div>
                           </div>
@@ -806,6 +995,26 @@ export const Admin = () => {
                                   value={formData.promoText}
                                   onChange={(e) => setFormData({...formData, promoText: e.target.value})}
                                 />
+                                <div className="grid grid-cols-2 gap-4 mt-2">
+                                  <div>
+                                    <label className="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 font-sans">Mulai</label>
+                                    <input 
+                                      type="date" 
+                                      className="w-full py-1 text-xs font-bold text-slate-600 bg-transparent outline-none border-b border-slate-50 focus:border-teal-400 transition-all font-sans"
+                                      value={formData.promoStartDate}
+                                      onChange={(e) => setFormData({...formData, promoStartDate: e.target.value})}
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 font-sans">Berakhir</label>
+                                    <input 
+                                      type="date" 
+                                      className="w-full py-1 text-xs font-bold text-slate-600 bg-transparent outline-none border-b border-slate-50 focus:border-teal-400 transition-all font-sans"
+                                      value={formData.promoEndDate}
+                                      onChange={(e) => setFormData({...formData, promoEndDate: e.target.value})}
+                                    />
+                                  </div>
+                                </div>
                               </motion.div>
                             )}
                           </AnimatePresence>

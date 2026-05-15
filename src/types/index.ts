@@ -1,3 +1,8 @@
+export interface ProductUnit {
+  name: string;
+  price: number;
+}
+
 export interface Product {
   id?: string;
   name: string;
@@ -8,6 +13,7 @@ export interface Product {
   priceMB?: number;    // Harga MB
   priceKhusus?: number; // Harga Khusus
   priceHKOTC?: number;  // Harga HK OTC
+  units?: ProductUnit[];
   imageUrl?: string;
   isPromo?: boolean;
   isBundling?: boolean;
@@ -16,6 +22,9 @@ export interface Product {
   ingredients?: string;
   usageInstructions?: string;
   promoText?: string;
+  promoStartDate?: string;
+  promoEndDate?: string;
+  packaging?: string;
   createdAt: any;
   updatedAt: any;
 }

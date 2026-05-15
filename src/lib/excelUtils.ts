@@ -15,12 +15,16 @@ export const excelUtils = {
         'Harga HK OTC': 42000,
         'Is Promo (Y/N)': 'Y',
         'Promo Text': 'Diskon 10%',
+        'Promo Start (YYYY-MM-DD)': '2026-05-01',
+        'Promo End (YYYY-MM-DD)': '2026-05-30',
         'Is Bundling (Y/N)': 'N',
         'Isi Paket Bundling': '',
         Khasiat: 'Untuk meredakan demam',
         Kandungan: 'Paracetamol 500mg',
+        Kemasan: 'Box, 10 Strip @ 10 Tablet',
         'Aturan Pakai': '3x sehari 1 tablet',
-        'URL Gambar': 'https://example.com/image.jpg'
+        'URL Gambar': 'https://example.com/image.jpg',
+        'Multi Satuan': 'Lembar:2000;Box:20000'
       }
     ];
 
@@ -56,12 +60,19 @@ export const excelUtils = {
               priceHKOTC: row['Harga HK OTC'] ? Number(row['Harga HK OTC']) : 0,
               isPromo: String(row['Is Promo (Y/N)']).toUpperCase() === 'Y',
               promoText: String(row['Promo Text'] || ''),
+              promoStartDate: row['Promo Start (YYYY-MM-DD)'] ? String(row['Promo Start (YYYY-MM-DD)']) : '',
+              promoEndDate: row['Promo End (YYYY-MM-DD)'] ? String(row['Promo End (YYYY-MM-DD)']) : '',
               isBundling: String(row['Is Bundling (Y/N)']).toUpperCase() === 'Y',
               bundlingItems: String(row['Isi Paket Bundling'] || ''),
               benefits: String(row.Khasiat || ''),
               ingredients: String(row.Kandungan || ''),
+              packaging: String(row.Kemasan || ''),
               usageInstructions: String(row['Aturan Pakai'] || ''),
-              imageUrl: String(row['URL Gambar'] || '')
+              imageUrl: String(row['URL Gambar'] || ''),
+              units: row['Multi Satuan'] ? String(row['Multi Satuan']).split(';').map(u => {
+                const [name, price] = u.split(':');
+                return { name: name?.trim() || '', price: Number(price || 0) };
+              }).filter(u => u.name) : []
             };
           });
 
